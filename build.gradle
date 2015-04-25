@@ -1,0 +1,24 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'war'
+
+version = '1.0'
+
+dependencies {
+    compile fileTree(dir: 'lib', include: '*.jar')
+}
+
+war{
+	webAppDirName='WebContent'
+	webInf {
+	    into('classes') {
+	        from 'build/classes'
+	        exclude 'tmp/**'
+	    }
+	     into('classes') {
+	        from 'WebContent/WEB-INF/config'
+	        include 'log4j.properties'
+	    }
+	}
+	destinationDir=file('dist')
+}

@@ -1,0 +1,183 @@
+package com.macchicken.controller;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.macchicken.dto.Person;
+import com.macchicken.dto.PersonVS;
+import com.macchicken.model.PersonModel;
+import com.macchicken.model.PersonModelVS;
+import com.macchicken.service.EditService;
+import com.macchicken.service.IPersonServie;
+import com.macchicken.service.PersonService;
+import com.macchicken.utils.ObjectTools;
+
+@RestController
+public class EditPersonController {
+
+	@Resource(name="editService")
+	private EditService editService;
+
+	@Resource(name="personInMemorySerive")
+	private PersonService personService;
+
+	@Resource(name="newPersonSerivce")
+	private IPersonServie newPersonSerivce;
+
+
+	@RequestMapping(value="/mymvc/saveperson.do", method = RequestMethod.POST)  
+	public Map<String,Object> savePersonInfo(PersonModel person){
+		Person data=(Person) ObjectTools.MapToObject(person, new Person());
+		editService.savePerson(data);
+		HashMap<String,Object> result=new HashMap<String,Object>();
+		result.put("success", true);
+		result.put("person", person);
+		return result;
+	}
+
+	@RequestMapping(value="/mymvc/queryperson.do", method = RequestMethod.GET)  
+	public Map<String,Object> queryPersonInfo(){
+		Person data=editService.getPerson();
+		HashMap<String,Object> result=new HashMap<String,Object>();
+		result.put("success", true);
+		result.put("person", ObjectTools.MapToModel(data, new PersonModel()));
+		return result;
+	}
+
+	@RequestMapping(value="/mymvc/editperson.do")  
+	public ModelAndView editPersonInfo(String id){
+		ModelAndView modelAndView = new ModelAndView();
+		modelAndView.setViewName("createperson");
+		modelAndView.addObject("personid",id);
+		return modelAndView;
+	}
+	@RequestMapping(value="/mymvc/editpersonindb.do")  
+	public ModelAndView editPersonInfoIndb(String id){
+		ModelAndView modelAndView = new ModelAndView();
+		modelAndView.setViewName("createpersondb");
+		modelAndView.addObject("personid",id);
+		return modelAndView;
+	}
+	@RequestMapping(value="/mymvc/deleteperson.do")  
+	public ModelAndView deletePersonInfo(String id){
+		personService.deletePerson(Integer.parseInt(id));
+		ModelAndView modelAndView = new ModelAndView();
+		modelAndView.setViewName("viewperson");
+		return modelAndView;
+	}
+	@RequestMapping(value="/mymvc/deletepersonindb.do")  
+	public ModelAndView deletePersonInfoIndb(String id){
+		newPersonSerivce.delete(id);
+		ModelAndView modelAndView = new ModelAndView();
+		modelAndView.setViewName("viewpersondb");
+		return modelAndView;
+	}
+
+	@RequestMapping(value="/mymvc/getPerson.do", method = RequestMethod.GET)  
+	public Map<String,Object> getPersonInfo(String id){
+		Person data=personService.getPerson(Integer.parseInt(id));
+		HashMap<String,Object> result=new HashMap<String,Object>();
+		result.put("success", true);
+		result.put("person", ObjectTools.MapToModel(data, new PersonModel()));
+		return result;
+	}
+	@RequestMapping(value="/mymvc/getPersonindb.do", method = RequestMethod.GET)  
+	public Map<String,Object> getPersonInfoIndb(String id){
+		PersonVS data=newPersonSerivce.select(id);
+		HashMap<String,Object> result=new HashMap<String,Object>();
+		result.put("success", true);
+		result.put("person", ObjectTools.MapToModel(data, new PersonModelVS()));
+		return result;
+	}
+
+	@RequestMapping(value="/mymvc/saveOrUpdatePerson.do", method = RequestMethod.POST)  
+	public Map<String,Object> saveOrUpdatePersonInfo(PersonModel person){
+		Person data=(Person) ObjectTools.MapToObject(person, new Person());
+		if (person.getId() >-1) {
+			personService.update(data) ;
+		} else {
+			personService.save(data);
+		}
+		HashMap<String,Object> result=new HashMap<String,Object>();
+		result.put("success", true);
+		return result;
+	}
+	@RequestMapping(value="/mymvc/saveOrUpdatePersonindb.do", method = RequestMethod.POST)  
+	public Map<String,Object> saveOrUpdatePersonInfoIndb(PersonModelVS person){
+		PersonVS data=(PersonVS) ObjectTools.MapToObject(person, new PersonVS());
+		if (data.getId()!=null&&!"-1".equals(data.getId().trim())) {
+			newPersonSerivce.update(data);
+		} else {
+			String newId= java.util.UUID.randomUUID().toString().replaceAll("-", "");
+			data.setId(newId);
+			newPersonSerivce.save(data);
+		}
+		HashMap<String,Object> result=new HashMap<String,Object>();
+		result.put("success", true);
+		return result;
+	}
+
+	@RequestMapping(value="/mymvc/getPersons.do", method = RequestMethod.GET)  
+	public Map<String,Object> getPersonsInfo(){
+		List<Person> temp=personService.getPersons();
+		List<PersonModel> personList = null;
+		if (temp!=null&&temp.size()>0){
+			personList = new ArrayList<PersonModel>(temp.size());
+			int i=0;
+		for (Person p : temp){
+			personList.add(i,(PersonModel) ObjectTools.MapToModel(p, new PersonModel()));i++;
+		}}else{
+			personList= new ArrayList<PersonModel>();
+		}
+		HashMap<String,Object> result=new HashMap<String,Object>();
+		result.put("success", true);
+		result.put("personlist", personList);
+		return result;
+	}
+	@RequestMapping(value="/mymvc/getPersonsindb.do", method = RequestMethod.GET)  
+	public Map<String,Object> getPersonsInfoIndb(){
+		List<PersonVS> temp=newPersonSerivce.selectAll();
+		List<PersonModelVS> personList = null;;
+		if (temp!=null&&temp.size()>0){
+			personList = new ArrayList<PersonModelVS>(temp.size());
+			int i=0;
+			for (PersonVS p : temp){
+				personList.add(i,(PersonModelVS) ObjectTools.MapToModel(p, new PersonModelVS()));i++;
+			}}else{
+			personList = new ArrayList<PersonModelVS>();
+		}
+		HashMap<String,Object> result=new HashMap<String,Object>();
+		result.put("success", true);
+		result.put("personlist", personList);
+		return result;
+	}
+
+	@RequestMapping(value="/mymvc/viewperson.do")  
+	public ModelAndView Viewpeopele(){
+		ModelAndView modelAndView = new ModelAndView();
+		modelAndView.setViewName("viewperson");
+		return modelAndView;
+	}
+	@RequestMapping(value="/mymvc/viewpersonindb.do")  
+	public ModelAndView ViewpeopeleIndb(){
+		ModelAndView modelAndView = new ModelAndView();
+		modelAndView.setViewName("viewpersondb");
+		return modelAndView;
+	}
+	@RequestMapping(value = "/mymvc/createpersonindb.do")
+	public ModelAndView  MyCreatepersonIndb(){
+		ModelAndView modelAndView = new ModelAndView();
+		modelAndView.setViewName("createpersondb");
+		modelAndView.addObject("personid", -1);
+		return modelAndView;
+	}
+}
