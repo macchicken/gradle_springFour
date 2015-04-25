@@ -2,6 +2,7 @@
 Spring 4 with latest Freemarker
 
 Spring 4.1.6 release, migrate from a Spring3 project
+
 Since org.springframework.http.converter.json.MappingJacksonHttpMessageConverter is removed,
 so use RestController when dealing with json,
 should use org.springframework.web.accept.ContentNegotiationManagerFactoryBean to handle the json type in bean setting,
