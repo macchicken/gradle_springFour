@@ -12,4 +12,4 @@ Also, must assign cacheManagerName for each cacheManager while using Spring EhCa
 instead of warnings in Spring3
 
 jackson is 2.5.3
-mybatis is 3.2.8,becareful with String and int convert, in this verison, would throw cast exception, so sepcify the parapemeter type with String
+mybatis is 3.2.8,becareful with String and int convert, in this verison, would throw cast exception, so specify the parameter type with String
